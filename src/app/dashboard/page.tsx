@@ -1,6 +1,6 @@
 // app/dashboard/page.tsx
 'use client'
-
+const { data: userData, error: dbError } = await supabase.from('users').select('*')
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase/client'

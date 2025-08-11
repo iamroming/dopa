@@ -1,5 +1,7 @@
-'use client';
+'use client'
 
+import { Suspense } from 'react'
+import VerifyEmailContent from './VerifyEmailContent'
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -77,6 +79,10 @@ export default function VerifyEmailPage() {
           <Link href="/" className="text-blue-600 hover:underline">
             Return to homepage
           </Link>
+
+<Suspense fallback={<div>Loading verification...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
         </div>
       </div>
     </div>

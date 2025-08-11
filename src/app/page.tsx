@@ -2,9 +2,9 @@
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import Navigation from '@/components/auth/Navigation'
-import { format } from 'path'
+//import { format } from 'path'
 
-import { createHash } from 'crypto';
+//import { createHash } from 'crypto';
 import { generateHash } from '@/utils/hash'; 
 // export const generateHash = (str: string): string => {
 //   return createHash('md5').update(str).digest('hex');
