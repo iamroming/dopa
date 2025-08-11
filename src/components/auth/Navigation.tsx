@@ -5,29 +5,28 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 
-// Define proper types for Supabase user
-type User = {
+// Define proper user type based on Supabase Auth response
+interface User {
   id: string
   email?: string
   user_metadata?: {
-    name?: string
+    full_name?: string
     avatar_url?: string
   }
   app_metadata?: {
     provider?: string
-    [key: string]: any
   }
-} | null
+}
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [user, setUser] = useState<User>(null)
+  const [user, setUser] = useState<User | null>(null)
   const pathname = usePathname()
   const router = useRouter()
 
   // Define nav link type
-  type NavLink = {
+  interface NavLink {
     name: string
     href: string
     requiresAuth?: boolean
@@ -37,12 +36,13 @@ export default function Navigation() {
     { name: 'Home', href: '/' },
     { name: 'Features', href: '/features' },
     { name: 'Pricing', href: '/pricing' },
+    { name: 'Dashboard', href: '/dashboard', requiresAuth: true }
   ]
 
   // Handle auth state changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setUser(session?.user ?? null)
         if (event === 'SIGNED_OUT') {
           router.push('/login')
@@ -58,7 +58,7 @@ export default function Navigation() {
     return () => subscription?.unsubscribe()
   }, [router])
 
-  // Responsive behavior
+  // Handle scroll behavior
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
     window.addEventListener('scroll', handleScroll)
@@ -97,17 +97,12 @@ export default function Navigation() {
             ))}
             
             {user ? (
-              <div className="flex items-center gap-4 ml-4">
-                <Link href="/dashboard" className="text-gray-700 hover:text-blue-500">
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Logout
+              </button>
             ) : (
               <div className="flex items-center gap-4 ml-4">
                 <Link href="/login" className="text-gray-700 hover:text-blue-500">
@@ -130,13 +125,7 @@ export default function Navigation() {
             aria-label="Toggle menu"
             aria-expanded={isMenuOpen}
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {isMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
+            {/* Hamburger icon */}
           </button>
         </div>
 
@@ -159,24 +148,12 @@ export default function Navigation() {
               
               <div className="border-t border-gray-200 pt-4 mt-2">
                 {user ? (
-                  <>
-                    <Link 
-                      href="/dashboard" 
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block px-4 py-3 hover:bg-gray-100 rounded-md"
-                    >
-                      Dashboard
-                    </Link>
-                    <button
-                      onClick={() => {
-                        handleLogout()
-                        setIsMenuOpen(false)
-                      }}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-md"
-                    >
-                      Logout
-                    </button>
-                  </>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-md"
+                  >
+                    Logout
+                  </button>
                 ) : (
                   <>
                     <Link 
