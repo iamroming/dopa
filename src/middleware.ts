@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
     // Example usage - these will now be type-safe
     const headers = new Headers(request.headers);
     headers.set('x-supabase-url', supabaseUrl); // No more type error
-    
+    console.log(supabaseKey);
     return NextResponse.next({
       request: { headers }
     });

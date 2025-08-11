@@ -11,7 +11,7 @@ import { generateHash } from '@/utils/hash';
 // };
 export default function Home() {
   const { user } = useAuth()
-const currentDate: string = new Date().toISOString().split('T')[0];
+//const currentDate: string = new Date().toISOString().split('T')[0];
 const dateStr = new Date().toISOString().split('T')[0];
 const hash = generateHash(dateStr);
 console.log(hash);

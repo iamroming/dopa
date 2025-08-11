@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client'; // Make sure this path is correct
 
+import LoadingSpinner from '@/components/LoadingSpinner'
 export default function VerifyEmailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -80,7 +81,7 @@ export default function VerifyEmailPage() {
             Return to homepage
           </Link>
 
-<Suspense fallback={<div>Loading verification...</div>}>
+<Suspense fallback={<LoadingSpinner />}>
       <VerifyEmailContent />
     </Suspense>
         </div>

@@ -39,42 +39,43 @@ export default function VerifyEmailContent() {
     verifyToken()
   }, [token, router])
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    )
-  }
+  if (loading) return <LoadingSpinner />
+  if (error) return <ErrorMessage error={error} />
+  if (success) return <SuccessMessage />
 
-  if (error) {
-    return (
-      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">Verification Error</h1>
-        <p className="text-gray-700 mb-4">{error}</p>
-        <button
-          onClick={() => router.push('/login')}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-        >
-          Return to Login
-        </button>
-      </div>
-    )
-  }
+  return null
+}
 
-  if (success) {
-    return (
-      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-green-600 mb-4">Email Verified!</h1>
-        <p className="text-gray-700 mb-4">Your email has been successfully verified. Redirecting to dashboard...</p>
-      </div>
-    )
-  }
+function LoadingSpinner() {
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  )
+}
 
+function ErrorMessage({ error }: { error: string }) {
+  const router = useRouter()
+  
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4">Email Verification</h1>
-      <p className="text-gray-700">Processing your verification request...</p>
+      <h1 className="text-2xl font-bold text-red-600 mb-4">Verification Error</h1>
+      <p className="text-gray-700 mb-4">{error}</p>
+      <button
+        onClick={() => router.push('/login')}
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+      >
+        Return to Login
+      </button>
+    </div>
+  )
+}
+
+function SuccessMessage() {
+  return (
+    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold text-green-600 mb-4">Email Verified!</h1>
+      <p className="text-gray-700 mb-4">Your email has been successfully verified. Redirecting to dashboard...</p>
     </div>
   )
 }
