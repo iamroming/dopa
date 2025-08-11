@@ -43,3 +43,5 @@ echo "node_modules" >> .gitignore
 echo ".env.local" >> .gitignore
 echo ".next" >> .gitignore
 echo ".vercel" >> .gitignore
+
+.vercel

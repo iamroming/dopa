@@ -3,14 +3,38 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client' // Import the supabase client directly
+import { supabase } from '@/lib/supabase/client'
+
+// Define user type based on Supabase Auth response
+type User = {
+  id: string
+  email?: string
+  user_metadata?: {
+    name?: string
+    avatar_url?: string
+  }
+  // Add other user properties you use in your app
+} | null
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User>(null)
   const pathname = usePathname()
   const router = useRouter()
+
+  // Define nav link type
+  type NavLink = {
+    name: string
+    href: string
+    requiresAuth?: boolean
+  }
+
+  const navLinks: NavLink[] = [
+    { name: 'Home', href: '/' },
+    { name: 'Features', href: '/features' },
+    { name: 'Pricing', href: '/pricing' },
+  ]
 
   // Handle auth state changes
   useEffect(() => {
@@ -40,11 +64,10 @@ export default function Navigation() {
     await supabase.auth.signOut()
   }
 
-  const navLinks = [
-    { name: 'Home', href: '/' },
-    { name: 'Features', href: '/features' },
-    { name: 'Pricing', href: '/pricing' },
-  ]
+  // Filter links based on auth status
+  const filteredLinks = navLinks.filter(link => 
+    !link.requiresAuth || (link.requiresAuth && user)
+  )
 
   return (
     <header className={`fixed w-full z-50 transition-all ${isScrolled ? 'bg-white shadow-md' : 'bg-white/90 backdrop-blur-sm'}`}>
@@ -56,7 +79,7 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
+            {filteredLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
@@ -75,7 +98,8 @@ export default function Navigation() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  aria-label="Logout"
                 >
                   Logout
                 </button>
@@ -87,7 +111,7 @@ export default function Navigation() {
                 </Link>
                 <Link
                   href="/signup"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
                   Sign Up
                 </Link>
@@ -97,9 +121,10 @@ export default function Navigation() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-md"
+            className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
+            aria-expanded={isMenuOpen}
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               {isMenuOpen ? (
@@ -115,10 +140,11 @@ export default function Navigation() {
         {isMenuOpen && (
           <nav className="md:hidden pt-4 pb-6">
             <div className="flex flex-col gap-2">
-              {navLinks.map((link) => (
+              {filteredLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
                   className={`px-4 py-3 rounded-md ${
                     pathname === link.href ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                   }`}
@@ -130,11 +156,18 @@ export default function Navigation() {
               <div className="border-t border-gray-200 pt-4 mt-2">
                 {user ? (
                   <>
-                    <Link href="/dashboard" className="block px-4 py-3 hover:bg-gray-100 rounded-md">
+                    <Link 
+                      href="/dashboard" 
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-4 py-3 hover:bg-gray-100 rounded-md"
+                    >
                       Dashboard
                     </Link>
                     <button
-                      onClick={handleLogout}
+                      onClick={() => {
+                        handleLogout()
+                        setIsMenuOpen(false)
+                      }}
                       className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-md"
                     >
                       Logout
@@ -142,11 +175,16 @@ export default function Navigation() {
                   </>
                 ) : (
                   <>
-                    <Link href="/login" className="block px-4 py-3 hover:bg-gray-100 rounded-md">
+                    <Link 
+                      href="/login" 
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-4 py-3 hover:bg-gray-100 rounded-md"
+                    >
                       Login
                     </Link>
                     <Link
                       href="/signup"
+                      onClick={() => setIsMenuOpen(false)}
                       className="block px-4 py-3 mt-2 text-center bg-blue-600 text-white hover:bg-blue-700 rounded-md"
                     >
                       Sign Up

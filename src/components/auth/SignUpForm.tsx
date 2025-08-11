@@ -2,29 +2,23 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase/client'
+import Link from 'next/link'
 
-export default function SignupForm() {
+export default function SignUpForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  
-  const supabase = createClientComponentClient({
-   supabaseUrl:'https://tcxvbgraeetjgjkzremp.supabase.co',
-supabaseKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjeHZiZ3JhZWV0amdqa3pyZW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMTcwMTEsImV4cCI6MjA2OTY5MzAxMX0.YVp-fIA2vQ4wBAFmNedviSUEhKrZOq9k7vLEUwmIgG8'
 
-
-})
-
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
-      const { error: signupError } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -32,75 +26,80 @@ supabaseKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
         }
       })
 
-      if (signupError) throw signupError
+      if (error) throw error
       router.push('/verify-email')
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('An unknown error occurred')
-      }
+      setError(err instanceof Error ? err.message : 'Sign up failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow">
-      <h1 className="text-2xl font-bold text-center">Create Account</h1>
+    <div className="max-w-md w-full space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold">Create your account</h2>
+        <p className="mt-2 text-gray-600">Get started with our platform</p>
+      </div>
+
       {error && (
-        <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg">
+        <div className="p-3 text-red-600 bg-red-50 rounded-md">
           {error}
         </div>
       )}
-      <form onSubmit={handleSignup} className="mt-8 space-y-6">
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block mb-1 text-sm font-medium">
             Email
           </label>
           <input
             id="email"
             type="email"
-            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            placeholder="your@email.com"
           />
         </div>
+
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="block mb-1 text-sm font-medium">
             Password
           </label>
           <input
             id="password"
             type="password"
-            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            placeholder="••••••••"
           />
         </div>
+
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          className="w-full px-4 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
-          {loading ? 'Creating account...' : 'Sign Up'}
+          {loading ? 'Creating account...' : 'Sign up'}
         </button>
+
+        <div className="text-sm text-center text-gray-600">
+          Already have an account?{' '}
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Log in
+          </Link>
+        </div>
+
+        <div className="text-sm text-center text-gray-600">
+          <Link href="/" className="text-blue-600 hover:underline">
+            ← Return to homepage
+          </Link>
+        </div>
       </form>
-      <p className="mt-4 text-center text-sm text-gray-600">
-        Already have an account?{' '}
-        <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-          Log in
-        </a>
-      </p>
-      
-        <p className="mt-4 text-center text-sm text-gray-600">
-      Want to proceed as Guest ?
-        <a href="/" className="font-medium text-blue-600 hover:text-blue-500">
-      Go Ahead
-        </a>
-      </p>
     </div>
   )
 }

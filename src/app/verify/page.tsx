@@ -1,84 +1,135 @@
-'use client'
+'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createHash } from 'crypto';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from "next/link";
 
-export default function VerificationForm() {
-  const [userInput, setUserInput] = useState('');
-  const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null);
+// Custom Button component
+const Button = ({ 
+  children, 
+  onClick, 
+  disabled = false,
+  className = ''
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+}) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+      disabled 
+        ? 'bg-gray-300 cursor-not-allowed' 
+        : 'bg-blue-600 hover:bg-blue-700 text-white'
+    } ${className}`}
+  >
+    {children}
+  </button>
+);
+
+export default function VerifyEmailPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  // Generate today's verification code (last 4 chars of MD5 hash)
-  const generateVerificationCode = (): string => {
-    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const hash = createHash('md5').update(currentDate).digest('hex');
-    return hash.slice(-4);
-  };
-
-  const verificationCode = generateVerificationCode();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleVerify = async () => {
+    if (!token) return;
     
-    if (userInput === verificationCode) {
-      setMessage({ text: 'Success! Code matched.', isError: false });
-      // Redirect or perform action on success
-       router.push('/');
-    } else {
-      setMessage({ text: 'Wrong OTP entered.', isError: true });
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Verification failed');
+      }
+
+      setSuccess(true);
+      setTimeout(() => router.push('/dashboard'), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-         <p>Today's Date: {new Date().toISOString().split('T')[0]}</p>
-          <p className='text-white'>API Key: {createHash('md5').update(new Date().toISOString().split('T')[0]).digest('hex')}</p>
-        <h1 className="text-2xl font-bold mb-6 text-center">Today's OTP Verification</h1>
-        
-        {message && (
-          <div className={`mb-4 p-3 rounded-md ${message.isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-            {message.text}
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">
+      <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-8 shadow-md">
+        <div className="space-y-2 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Verify Your Email</h1>
+          <p className="text-gray-600">
+            {token
+              ? "Click below to verify your email address"
+              : "Check your email for the verification link"}
+          </p>
+        </div>
+
+        {error && (
+          <div className="p-3 text-red-700 bg-red-100 rounded-md">
+            {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 mb-1">
-              Enter Today's OTP
-            </label>
-            <input
-              type="text"
-              id="verificationCode"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              maxLength={4}
-              pattern="[a-fA-F0-9]{4}"
-              title="Enter a 4-character hexadecimal code"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              For OTP Contact The Administrator of the APP
+        {success ? (
+          <div className="p-3 text-green-700 bg-green-100 rounded-md">
+            Email verified successfully! Redirecting...
+          </div>
+        ) : token ? (
+          <Button 
+            onClick={handleVerify}
+            disabled={loading}
+            className="w-full"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Verifying...
+              </span>
+            ) : 'Verify Email'}
+          </Button>
+        ) : (
+          <div className="text-center text-sm text-gray-600">
+            <p>Didn&apos;t receive an email?</p>
+            <p>
+              Please check your spam folder or{' '}
+              <Link
+                href="/auth/resend-verification"
+                className="text-blue-600 hover:underline"
+              >
+                request a new link
+              </Link>
+              .
             </p>
           </div>
+        )}
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        <div className="pt-4 text-center text-sm">
+          <Link
+            href="/"
+            className="text-gray-600 hover:text-gray-900 hover:underline"
           >
-            Verify
-          </button>
-        </form>
-
-        {/* Debug view (remove in production) */}
-        <div className="mt-6 p-3 bg-white-100 rounded-md text-xs">
-          <p className="font-mono">Debug Info:</p>
-        
-          <p className='text-white'>Expected Code: {verificationCode}</p>
+            ← Return to homepage
+          </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
