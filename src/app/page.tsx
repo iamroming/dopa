@@ -5,10 +5,10 @@ import Navigation from '@/components/auth/Navigation'
 import { format } from 'path'
 
 import { createHash } from 'crypto';
-
-export const generateHash = (str: string): string => {
-  return createHash('md5').update(str).digest('hex');
-};
+import { generateHash } from '@/utils/hash'; 
+// export const generateHash = (str: string): string => {
+//   return createHash('md5').update(str).digest('hex');
+// };
 export default function Home() {
   const { user } = useAuth()
 const currentDate: string = new Date().toISOString().split('T')[0];
