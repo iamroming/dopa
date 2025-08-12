@@ -1,15 +1,17 @@
-import './globals.css'
+// src/app/layout.tsx
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import SupabaseAuthProvider from '@/components/auth/AuthProvider'
-import Navigation from '@/components/Navigation';
+import './globals.css'
+import { AuthProvider } from '@/components/auth/AuthProvider'
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Supabase Auth App',
-  description: 'Next.js app with Supabase authentication',
+  title: 'My App',
+  description: 'Welcome to my application',
 }
 
+// This is the crucial fix - make sure to export a React component as default
 export default function RootLayout({
   children,
 }: {
@@ -18,10 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Navigation />
-        <SupabaseAuthProvider>
+        <AuthProvider>
           {children}
-        </SupabaseAuthProvider>
+        </AuthProvider>
       </body>
     </html>
   )
