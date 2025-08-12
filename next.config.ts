@@ -12,8 +12,10 @@ module.exports = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    serverExternalPackages: ['@supabase/supabase-js'],
+   // serverExternalPackages: ['@supabase/supabase-js'],
+   serverExternalPackages: ['@supabase/ssr']
   },
+  
   },
   
   },
