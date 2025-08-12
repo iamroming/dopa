@@ -8,6 +8,12 @@ module.exports = {
     serverComponentsExternalPackages: ['your-package-name'],
     eslint: {
     ignoreDuringBuilds: true,
+     eslint: {
+    ignoreDuringBuilds: true,
+  },
+  experimental: {
+    serverExternalPackages: ['@supabase/supabase-js'],
+  },
   },
   
   },
