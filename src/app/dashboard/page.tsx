@@ -4,15 +4,23 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
+// Define the user data type based on your database schema
+interface UserData {
+  id: string
+  email?: string
+  created_at?: string
+  // Add other fields that exist in your 'users' table
+  // Make fields optional with ? if they might be null
+}
+
 export default function DashboardPage() {
-  const [userData, setUserData] = useState<any>(null)
+  const [userData, setUserData] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  // Mark the useEffect callback as async
   useEffect(() => {
-    const fetchData = async () => { // Add async here
+    const fetchData = async () => {
       try {
         const { data, error: dbError } = await supabase
           .from('users')
