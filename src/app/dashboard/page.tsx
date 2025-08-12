@@ -4,17 +4,18 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-// Define the user data type based on your database schema
-interface UserData {
-  id: string
-  email?: string
-  created_at?: string
-  // Add other fields that exist in your 'users' table
-  // Make fields optional with ? if they might be null
+// Define a proper type for your user data
+interface User {
+  id: string;
+  email?: string;
+  name?: string;
+  created_at: string;
+  // Add all other fields that exist in your users table
+  // Make optional (with ?) if the field might be null
 }
 
 export default function DashboardPage() {
-  const [userData, setUserData] = useState<UserData | null>(null)
+  const [userData, setUserData] = useState<User | null>(null) // Fixed: Replaced any with User | null
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -28,7 +29,7 @@ export default function DashboardPage() {
           .single()
 
         if (dbError) throw dbError
-        setUserData(data)
+        setUserData(data as User) // Type assertion if needed
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch data')
       } finally {
