@@ -10,17 +10,28 @@ if (!supabaseUrl || !supabaseKey) {
     'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
   )
 }
-
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
+export const supabase = createBrowserClient(
+  supabaseUrl,
+  supabaseKey,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    }
   }
+)
+// export const supabase = createClient(supabaseUrl, supabaseKey, {
+//   auth: {
+//     persistSession: true,
+//     autoRefreshToken: true,
+//   }
   
-})
+
 
 // Optional: Helper function if you need additional validation
 export const getSupabaseClient = () => {
   return supabase
 }
+
+
 
